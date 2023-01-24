@@ -215,14 +215,19 @@ SELECT UPPER(first_name) FROM employees;
 -- Select the name, surname and name of the current department of each employee; *********************
 
 
-(SELECT employees.first_name, employees.last_name, dept_emp.dept_no as 'department'
-FROM employees JOIN dept_emp
-ON employees.emp_no = dept_emp.emp_no)
-UNION
-(SELECT employees.first_name, employees.last_name, dept_manager.dept_no
-FROM employees JOIN dept_manager
-ON employees.emp_no = dept_manager.emp_no) ORDER BY last_name;
-
+SELECT e.first_name, e.last_name, d.dept_name
+  FROM employees e
+  JOIN (
+    SELECT emp_no, dept_no, from_date 
+    FROM dept_emp 
+    WHERE from_date IN (
+      SELECT MAX(from_date) 
+      FROM dept_emp 
+      GROUP BY emp_no
+    )
+  ) recent_depts ON e.emp_no = recent_depts.emp_no 
+  JOIN departments d ON recent_depts.dept_no = d.dept_no 
+  ORDER BY e.emp_no;
 
 
 -- Select the name, surname and number of times the employee has worked as a manager;
